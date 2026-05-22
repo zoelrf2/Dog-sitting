@@ -1,4 +1,4 @@
-import { SitterProfile, Review, Booking } from './types';
+import { SitterProfile, Review, Booking, SocialPost, DisqusComment } from './types';
 
 export const LOCATIONS = [
   'Greenwood',
@@ -193,3 +193,98 @@ export const INITIAL_BOOKINGS: Booking[] = [
     createdAt: '2026-05-21T18:15:00Z'
   }
 ];
+
+export const INITIAL_POSTS: SocialPost[] = [
+  {
+    id: 'post-1',
+    authorName: 'Marcus & Chloe Lin',
+    authorEmail: 'marcus.lim83@gmail.com',
+    authorRole: 'owner',
+    authorAvatar: '🧑‍🤝‍🧑',
+    title: '📢 Greenwood Park Dog Morning Social - Sat 8:30 AM!',
+    content: 'Hi fellow Greenwood dog parents! We are hosting a light socialization playdate this Saturday morning. Grab a lukewarm latte and let your furry sidekicks play at the off-leash field.\n\nWe will be there with Rusty (our yellow golden retriever). All breeds and sizes welcome, but please ensure your companion is fully vaccinated and responsive to callback commands. Looking forward!',
+    category: 'Local Dog Meetups 🥾',
+    createdAt: '2026-05-21T10:00:00Z',
+    likes: 12
+  },
+  {
+    id: 'post-2',
+    authorName: 'Sarah Jenkins',
+    authorEmail: 'sarah.vetmed@outlook.com',
+    authorRole: 'sitter',
+    authorAvatar: '👩‍⚕️',
+    title: '🩺 Summer Hydration: Spotting signs of heat fatigue',
+    content: 'As a veterinary practitioner, I want to emphasize that dogs do not sweat like we do! They dissipate heat primarily through heavy panting.\n\nKey warnings of heat stress are: very dark red or dry gums, thick stringy saliva, lethargy, or glassy unfocused eyes. If you suspect heat stroke, douse them immediately in COOL (not freezing) tap water, focus on their paws, and contact a veterinarian immediately. Keep fresh water dishes available at all times!',
+    category: 'Care & Nutrition 🩺',
+    createdAt: '2026-05-20T14:30:00Z',
+    likes: 24
+  },
+  {
+    id: 'post-3',
+    authorName: 'Emily Henderson',
+    authorEmail: 'emilyh.sitting@gmail.com',
+    authorRole: 'sitter',
+    authorAvatar: '👩‍💼',
+    title: '❓ Best strategies for positive crate conditioning?',
+    content: 'Hi everyone! I often look after dogs who struggle with crate anxiety. My top tip is to NEVER use the crate as a punishment zone! Always associate it with positive triggers like freezing high-value treats (like peanut butter stuffed into chew cups). It builds immense security!\n\nWhat are your go-to tricks for getting nervous pups to adore their quiet sleeping crates? Comment down below on the Disqus board!',
+    category: 'General Discussion',
+    createdAt: '2026-05-19T08:15:00Z',
+    likes: 9
+  }
+];
+
+export const INITIAL_COMMENTS: DisqusComment[] = [
+  {
+    id: 'comment-1',
+    postId: 'general',
+    parentId: null,
+    authorName: 'Marcus & Chloe Lin',
+    authorEmail: 'marcus.lim83@gmail.com',
+    authorRole: 'owner',
+    authorAvatar: '🧑‍🤝‍🧑',
+    content: 'Using stuffed frozen treats has been an absolute game changer! Buddy falls asleep almost instantly inside his crate now without any whines.',
+    createdAt: '2026-05-21T11:20:00Z',
+    likes: 8,
+    dislikes: 0
+  },
+  {
+    id: 'comment-2',
+    postId: 'general',
+    parentId: 'comment-1',
+    authorName: 'David Carter',
+    authorEmail: 'david.walks@gmail.com',
+    authorRole: 'sitter',
+    authorAvatar: '👨',
+    content: 'Agreed 100%! I also recommend covering the crate with a dark, breathable sheet. This triggers their den instinct, helping them settle into a deep slumber.',
+    createdAt: '2026-05-21T12:05:00Z',
+    likes: 5,
+    dislikes: 0
+  },
+  {
+    id: 'comment-3',
+    postId: 'general',
+    parentId: null,
+    authorName: 'Sarah Jenkins',
+    authorEmail: 'sarah.vetmed@outlook.com',
+    authorRole: 'sitter',
+    authorAvatar: '👩‍⚕️',
+    content: 'Just a reminder to clean plastic chew toys and crates thoroughly once a week! Unwashed saliva attracts extensive bacterial counts that can irritate dog digestive tracts.',
+    createdAt: '2026-05-21T09:45:00Z',
+    likes: 14,
+    dislikes: 1
+  },
+  {
+    id: 'comment-4',
+    postId: 'general',
+    parentId: 'comment-3',
+    authorName: 'Olivia Martinez',
+    authorEmail: 'olivia.bakes@gmail.com',
+    authorRole: 'sitter',
+    authorAvatar: '👩‍🍳',
+    content: 'Excellent point Sarah! I always wash the play crates with dog-safe organic vinegar sprays here before guests arrive.',
+    createdAt: '2026-05-21T10:12:00Z',
+    likes: 4,
+    dislikes: 0
+  }
+];
+

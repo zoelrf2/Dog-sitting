@@ -20,8 +20,8 @@ import {
   HelpCircle
 } from 'lucide-react';
 
-import { SitterProfile, Booking, Review, DogSize, ServiceType } from './types';
-import { LOCATIONS, INITIAL_SITTERS, INITIAL_REVIEWS, INITIAL_BOOKINGS } from './mockData';
+import { SitterProfile, Booking, Review, DogSize, ServiceType, SocialPost, DisqusComment } from './types';
+import { LOCATIONS, INITIAL_SITTERS, INITIAL_REVIEWS, INITIAL_BOOKINGS, INITIAL_POSTS, INITIAL_COMMENTS } from './mockData';
 
 // Component Imports
 import Header from './components/Header';
@@ -34,6 +34,7 @@ import OwnerDashboard from './components/OwnerDashboard';
 import PersonalityMatcher from './components/PersonalityMatcher';
 import SitterChatView from './components/SitterChatView';
 import RegistrationModal from './components/RegistrationModal';
+import SocialView from './components/SocialView';
 
 // Cute Dog Image Assets
 import happyDogsHero from './assets/images/happy_dogs_hero_1779420349432.png';
@@ -46,6 +47,17 @@ export default function App() {
   // Global React States synced with client localStorage for instant persistence!
   const [role, setRole] = useState<'owner' | 'sitter'>('owner');
   const [isDbLoaded, setIsDbLoaded] = useState(false);
+  const [currentTab, setCurrentTab] = useState<'marketplace' | 'social'>('marketplace');
+
+  const [posts, setPosts] = useState<SocialPost[]>(() => {
+    const saved = localStorage.getItem('barksitter_social_posts');
+    return saved ? JSON.parse(saved) : INITIAL_POSTS;
+  });
+
+  const [comments, setComments] = useState<DisqusComment[]>(() => {
+    const saved = localStorage.getItem('barksitter_disqus_comments');
+    return saved ? JSON.parse(saved) : INITIAL_COMMENTS;
+  });
 
   const [sitters, setSitters] = useState<SitterProfile[]>(() => {
     const saved = localStorage.getItem('barksitter_sitters_pool');
@@ -97,6 +109,14 @@ export default function App() {
           setRegisteredOwner(dbState.registeredOwner);
           localStorage.setItem('barksitter_registered_owner', JSON.stringify(dbState.registeredOwner));
         }
+        if (dbState.posts) {
+          setPosts(dbState.posts);
+          localStorage.setItem('barksitter_social_posts', JSON.stringify(dbState.posts));
+        }
+        if (dbState.comments) {
+          setComments(dbState.comments);
+          localStorage.setItem('barksitter_disqus_comments', JSON.stringify(dbState.comments));
+        }
       } catch (err) {
         console.error('Error during initial sync load:', err);
       } finally {
@@ -135,6 +155,14 @@ export default function App() {
             if (freshState.registeredOwner) {
               setRegisteredOwner(freshState.registeredOwner);
               localStorage.setItem('barksitter_registered_owner', JSON.stringify(freshState.registeredOwner));
+            }
+            if (freshState.posts) {
+              setPosts(freshState.posts);
+              localStorage.setItem('barksitter_social_posts', JSON.stringify(freshState.posts));
+            }
+            if (freshState.comments) {
+              setComments(freshState.comments);
+              localStorage.setItem('barksitter_disqus_comments', JSON.stringify(freshState.comments));
             }
           } catch (e) {
             console.error('Error loading fresh live states:', e);
@@ -183,6 +211,20 @@ export default function App() {
       saveStateToSupabase(5, registeredOwner);
     }
   }, [registeredOwner, isDbLoaded]);
+
+  useEffect(() => {
+    localStorage.setItem('barksitter_social_posts', JSON.stringify(posts));
+    if (isDbLoaded) {
+      saveStateToSupabase(6, posts);
+    }
+  }, [posts, isDbLoaded]);
+
+  useEffect(() => {
+    localStorage.setItem('barksitter_disqus_comments', JSON.stringify(comments));
+    if (isDbLoaded) {
+      saveStateToSupabase(7, comments);
+    }
+  }, [comments, isDbLoaded]);
 
   // Search/Filters states
   const [searchArea, setSearchArea] = useState<string>('All');
@@ -303,6 +345,81 @@ export default function App() {
     );
   };
 
+  // Social Hub Interactive Actions
+  const handleAddSocialPost = (title: string, content: string, category: string) => {
+    const defaultName = role === 'owner' ? 'Marcus Lim' : 'Emily Henderson';
+    const defaultAvatar = role === 'owner' ? '🐶' : '👩‍💼';
+    const authorName = role === 'owner' 
+      ? (registeredOwner?.name || defaultName) 
+      : (mySitterProfile?.name || defaultName);
+
+    const newPost: SocialPost = {
+      id: `post-${Date.now()}`,
+      authorName,
+      authorEmail: USER_EMAIL,
+      authorRole: role,
+      authorAvatar: role === 'owner' ? defaultAvatar : (mySitterProfile?.avatar || defaultAvatar),
+      title,
+      content,
+      category,
+      createdAt: new Date().toISOString(),
+      likes: 0
+    };
+    setPosts((prev) => [newPost, ...prev]);
+  };
+
+  const handleAddDisqusComment = (content: string, parentId: string | null) => {
+    const defaultName = role === 'owner' ? 'Marcus Lim' : 'Emily Henderson';
+    const defaultAvatar = role === 'owner' ? '🐶' : '👩‍💼';
+    const authorName = role === 'owner' 
+      ? (registeredOwner?.name || defaultName) 
+      : (mySitterProfile?.name || defaultName);
+
+    const newComment: DisqusComment = {
+      id: `comment-${Date.now()}`,
+      postId: 'general',
+      parentId,
+      authorName,
+      authorEmail: USER_EMAIL,
+      authorRole: role,
+      authorAvatar: role === 'owner' ? defaultAvatar : (mySitterProfile?.avatar || defaultAvatar),
+      content,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      dislikes: 0
+    };
+    setComments((prev) => [newComment, ...prev]);
+  };
+
+  const handleVoteDisqusComment = (commentId: string, direction: 'up' | 'down') => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id === commentId) {
+          return {
+            ...c,
+            likes: direction === 'up' ? c.likes + 1 : c.likes,
+            dislikes: direction === 'down' ? c.dislikes + 1 : c.dislikes
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const handleLikeSocialPost = (postId: string) => {
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            likes: p.likes + 1
+          };
+        }
+        return p;
+      })
+    );
+  };
+
   // Sitter Search Filters Logic
   const filteredSitters = sitters
     .filter((sitter) => {
@@ -346,6 +463,39 @@ export default function App() {
       {/* Brand Header */}
       <Header currentRole={role} setRole={setRole} userEmail={USER_EMAIL} onOpenRegister={() => setShowRegistration(true)} />
 
+      {/* Tab Navigation Hub Selector */}
+      <div className="bg-white border-b border-slate-200/80 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-10 -mb-px justify-center sm:justify-start">
+            <button
+              onClick={() => setCurrentTab('marketplace')}
+              className={`py-4 px-2 border-b-2 font-bold text-sm transition-all duration-200 flex items-center space-x-2 cursor-pointer ${
+                currentTab === 'marketplace'
+                  ? 'border-violet-600 text-violet-700 font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <span className="text-base">🌎</span>
+              <span>Caregiver Marketplace</span>
+            </button>
+            <button
+              onClick={() => setCurrentTab('social')}
+              className={`py-4 px-2 border-b-2 font-bold text-sm transition-all duration-200 inline-flex items-center space-x-2 cursor-pointer ${
+                currentTab === 'social'
+                  ? 'border-violet-600 text-violet-700 font-extrabold'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <span className="relative text-base">
+                💬
+                <span className="absolute -top-1 -right-1 h-2 w-2 bg-fuchsia-500 rounded-full animate-pulse border border-white"></span>
+              </span>
+              <span>Social & Disqus Forum</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content View with transition constraints */}
       <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-grow">
         
@@ -379,9 +529,24 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* OWNER PROFILE / BROWSE SCREEN */}
-        {role === 'owner' ? (
-          <div className="space-y-8">
+        {currentTab === 'social' ? (
+          <SocialView
+            posts={posts}
+            comments={comments}
+            userEmail={USER_EMAIL}
+            userRole={role}
+            ownerName={registeredOwner?.name || 'Marcus Lim'}
+            sitterName={mySitterProfile.name}
+            onAddPost={handleAddSocialPost}
+            onAddComment={handleAddDisqusComment}
+            onVoteComment={handleVoteDisqusComment}
+            onLikePost={handleLikeSocialPost}
+          />
+        ) : (
+          <>
+            {/* OWNER PROFILE / BROWSE SCREEN */}
+            {role === 'owner' ? (
+              <div className="space-y-8">
             
             {/* Interactive Section Selector: Book vs Manage */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -689,6 +854,8 @@ export default function App() {
             onDeclineBooking={handleDeclineBooking}
             onCompleteBooking={handleCompleteBooking}
           />
+        )}
+          </>
         )}
 
       </main>

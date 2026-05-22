@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { SitterProfile, Booking, Review } from './types';
+import { SitterProfile, Booking, Review, SocialPost, DisqusComment } from './types';
 
 export interface AppState {
   sitters: SitterProfile[];
@@ -7,6 +7,8 @@ export interface AppState {
   reviews: Review[];
   customPups: any[];
   registeredOwner: any;
+  posts: SocialPost[];
+  comments: DisqusComment[];
 }
 
 // Discovered payload column name (e.g., 'value', 'content', 'data')
@@ -53,6 +55,10 @@ export async function loadStateFromSupabase(): Promise<Partial<AppState>> {
               state.customPups = parsed;
             } else if (idVal === 5) {
               state.registeredOwner = parsed;
+            } else if (idVal === 6) {
+              state.posts = parsed;
+            } else if (idVal === 7) {
+              state.comments = parsed;
             }
           } catch (e) {
             console.error('Error parsing row payload for ID:', row.id, e);

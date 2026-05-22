@@ -55,3 +55,31 @@ export interface Message {
   text: string;
   timestamp: string;
 }
+
+export interface SocialPost {
+  id: string;
+  authorName: string;
+  authorEmail: string;
+  authorRole: 'owner' | 'sitter' | 'moderator';
+  authorAvatar: string;
+  title: string;
+  content: string;
+  category: string;
+  createdAt: string;
+  likes: number;
+}
+
+export interface DisqusComment {
+  id: string;
+  postId: string;
+  parentId: string | null;
+  authorName: string;
+  authorEmail: string;
+  authorRole: 'owner' | 'sitter' | 'moderator';
+  authorAvatar: string;
+  content: string;
+  createdAt: string;
+  likes: number;
+  dislikes: number;
+}
+
